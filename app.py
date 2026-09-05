@@ -1,10 +1,17 @@
 import glob
+import os
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(
     page_title="Consulta de Padrón Electoral", page_icon="🗳️", layout="centered"
 )
+
+# --- MOSTRAR PORTADA ---
+if os.path.exists("portada.jpg"):
+  st.image("portada.jpg", use_container_width=True)
+elif os.path.exists("portada.png"):
+  st.image("portada.png", use_container_width=True)
 
 st.title("🗳️ Consulta de Lugar de Votación")
 st.markdown("### Seccional N° 43")
@@ -16,8 +23,7 @@ def cargar_datos():
   lista_df = []
   for archivo in archivos_excel:
     try:
-      # Leer usando motor alternativo o csv
-      df_temp = pd.read_excel(archivo, engine=None)
+      df_temp = pd.read_excel(archivo)
       df_temp.columns = df_temp.columns.astype(str).str.strip()
       lista_df.append(df_temp)
     except Exception:
@@ -32,7 +38,6 @@ def cargar_datos():
   return pd.DataFrame()
 
 
-# Si falla la lectura de excel, intentamos cargar
 try:
   df = cargar_datos()
 
@@ -70,10 +75,7 @@ try:
       else:
         st.warning("Ingresa un número de cédula.")
   else:
-    st.error(
-        "Falta instalar openpyxl. Asegúrate de tener el archivo"
-        " requirements.txt en GitHub con la palabra 'openpyxl'."
-    )
+    st.error("No se encontraron archivos de datos (.xlsx) en el repositorio.")
 
 except Exception as e:
-  st.error(f"Error: {e}")
+  st.error(f"Error al procesar la información: {e}")

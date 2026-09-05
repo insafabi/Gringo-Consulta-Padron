@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Consulta de Padron Electoral", page_icon="🗳️", layout="centered"
+    page_title="Consulta de Padrón Electoral", page_icon="🗳️", layout="centered"
 )
 
 st.title("🗳️ Consulta de Lugar de Votación")
@@ -11,43 +11,36 @@ st.markdown("### Seccional N° 43")
 
 
 @st.cache_data
-def cargar_todos_los_padrones():
-  # Busca todos los archivos excel (.xlsx) en la misma carpeta
+def cargar_datos():
   archivos_excel = glob.glob("*.xlsx")
-
   lista_df = []
   for archivo in archivos_excel:
     try:
-      df_temp = pd.read_excel(archivo)
-      # Limpiar nombres de columnas eliminando espacios
+      # Leer usando motor alternativo o csv
+      df_temp = pd.read_excel(archivo, engine=None)
       df_temp.columns = df_temp.columns.astype(str).str.strip()
       lista_df.append(df_temp)
-    except Exception as e:
-      st.warning(f"No se pudo leer el archivo: {archivo}")
+    except Exception:
+      pass
 
   if lista_df:
     df_consolidado = pd.concat(lista_df, ignore_index=True)
-    # Limpiar columna cedula
     df_consolidado['cedula_limpia'] = (
         df_consolidado['cedula'].astype(str).str.replace('.', '').str.strip()
     )
     return df_consolidado
-  else:
-    return pd.DataFrame()
+  return pd.DataFrame()
 
 
+# Si falla la lectura de excel, intentamos cargar
 try:
-  df = cargar_todos_los_padrones()
+  df = cargar_datos()
 
   if not df.empty:
-    st.info(
-        f"📊 Base de datos cargada: **{len(df):,}** electores registrados."
-        .replace(',', '.')
-    )
+    st.info(f"📊 Electores cargados: **{len(df):,}**".replace(',', '.'))
 
     cedula_input = st.text_input(
-        "Ingresa tu número de Cédula (sin puntos ni espacios):",
-        placeholder="Ejemplo: 4187526",
+        "Ingresa tu número de Cédula (sin puntos):", placeholder="Ej: 4187526"
     )
 
     if st.button("Buscar Votante"):
@@ -70,18 +63,17 @@ try:
           st.markdown(f"**Local de Votación:** {persona['local']}")
           st.markdown(f"**Seccional N°:** {persona['secc']}")
 
-          # Si tiene afiliación, se puede mostrar de forma limpia
           if 'PARTIDO' in persona and pd.notna(persona['PARTIDO']):
             st.markdown(f"**Afiliación:** {persona['PARTIDO']}")
         else:
-          st.error(
-              "No se encontró ninguna persona registrada con ese número de"
-              " cédula en estos locales."
-          )
+          st.error("No se encontró esa cédula en la lista.")
       else:
-        st.warning("Por favor, ingresa un número de cédula para consultar.")
+        st.warning("Ingresa un número de cédula.")
   else:
-    st.error("No se encontraron archivos Excel (.xlsx) en el repositorio.")
+    st.error(
+        "Falta instalar openpyxl. Asegúrate de tener el archivo"
+        " requirements.txt en GitHub con la palabra 'openpyxl'."
+    )
 
 except Exception as e:
-  st.error("Ocurrió un error al procesar la búsqueda.")
+  st.error(f"Error: {e}")

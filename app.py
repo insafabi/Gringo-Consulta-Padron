@@ -1,186 +1,241 @@
+import base64
 import glob
 import os
 import pandas as pd
 import streamlit as st
 
-# 1. CONFIGURACIÓN DE PÁGINA
+# Configuración de la página
 st.set_page_config(
-    page_title="Consulta de Padrón Electoral",
-    page_icon="🗳️",
+    page_title="Consulta de Padrón Electoral - Seccional 43",
+    page_icon="🔴",
     layout="centered",
 )
 
-# 2. ESTILOS CSS PERSONALIZADOS (UI/UX)
-st.markdown(
-    """
+
+# Función para convertir la imagen local a base64 para el fondo
+def obtener_imagen_base64():
+  for archivo in ["portada.jpg", "portada.png", "portada.JPG", "portada.PNG"]:
+    if os.path.exists(archivo):
+      with open(archivo, "rb") as f:
+        data = f.read()
+      ext = archivo.split(".")[-1].lower()
+      mime = "image/jpeg" if ext in ["jpg", "jpeg"] else "image/png"
+      return f"data:{mime};base64,{base64.b64encode(data).decode()}"
+  return None
+
+
+img_base64 = obtener_imagen_base64()
+
+# Estilos CSS
+css_fondo = (
+    f"""
     <style>
-    /* Fondo general claro */
-    .stApp {
-        background-color: #f8f9fa;
-        color: #212529;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     
-    /* Contenedor principal para mantener todo centrado y limpio */
-    .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2rem;
-        max-width: 650px;
-    }
+    .stApp {{
+        background-image: url("{img_base64}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
     
-    /* Encabezados institucionales */
-    h1, h2, h3, h4 {
-        color: #d32f2f !important;
-        text-align: center;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-    }
+    .stApp::before {{
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+        z-index: 0;
+    }}
+
+    .block-container {{
+        position: relative;
+        z-index: 1;
+        padding-top: 3rem;
+        max-width: 500px;
+    }}
     
-    /* Diseño del botón principal de búsqueda */
-    div.stButton > button:first-child {
-        background-color: #d32f2f !important;
+    .floating-card {{
+        background: rgba(255, 255, 255, 0.90);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 25px 20px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+        margin-top: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }}
+    
+    div.stButton > button:first-child {{
+        background-color: #e53935 !important;
         color: white !important;
         font-weight: bold;
-        font-size: 1.1rem;
-        border-radius: 8px;
-        border: none;
-        padding: 0.6rem 1.2rem;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
-    div.stButton > button:first-child:hover {
-        background-color: #b71c1c !important;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-    }
-    
-    /* Tarjeta de resultados flotante */
-    .result-card {
-        background-color: #ffffff;
-        border-left: 6px solid #d32f2f;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
-        margin-top: 20px;
-    }
-    
-    .result-card p {
         font-size: 1.05rem;
-        margin-bottom: 8px;
-        color: #333;
-    }
-    
-    .result-card b {
+        border-radius: 12px;
+        border: none;
+        padding: 0.75rem 1rem;
+        width: 100%;
+        box-shadow: 0px 4px 12px rgba(229, 57, 53, 0.4);
+        transition: all 0.2s ease;
+    }}
+    div.stButton > button:first-child:hover {{
+        background-color: #c62828 !important;
+    }}
+
+    .result-box {{
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 16px;
+        border-left: 6px solid #e53935;
+        box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
+        margin-top: 20px;
         color: #212529;
-    }
+    }}
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
+    if img_base64
+    else """
+    <style>
+    .stApp { background-color: #f0f2f6; }
+    </style>
+    """
 )
 
-# 3. MOSTRAR PORTADA
-if os.path.exists("portada.jpg"):
-    st.image("portada.jpg", use_container_width=True)
-elif os.path.exists("portada.png"):
-    st.image("portada.png", use_container_width=True)
+st.markdown(css_fondo, unsafe_allow_html=True)
 
-# 4. ENCABEZADO
-st.markdown("<h2>CONSULTA DE LUGAR DE VOTACIÓN</h2>", unsafe_allow_html=True)
-st.markdown(
-    "<p style='text-align: center; font-weight: bold; color: #555;'>Consulta tu local, mesa y orden</p>",
-    unsafe_allow_html=True,
-)
-
-# 5. CARGA Y PROCESAMIENTO DE DATOS
+# --- CARGA INTELIGENTE DE DATOS ---
 @st.cache_data
 def cargar_datos():
-    archivos_excel = glob.glob("*.xlsx")
-    
-    if not archivos_excel:
-        return pd.DataFrame()
+  archivos_excel = glob.glob("*.xlsx") + glob.glob("*.XLSX")
+  lista_df = []
 
-    lista_df = []
-    for archivo in archivos_excel:
-        try:
-            df_temp = pd.read_excel(archivo)
-            # Estandarizar nombres de columnas a minúsculas y sin espacios
-            df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
-            lista_df.append(df_temp)
-        except Exception:
-            pass
+  for archivo in archivos_excel:
+    try:
+      df_temp = pd.read_excel(archivo)
+      # Limpiar nombres de columnas (quitar espacios)
+      df_temp.columns = df_temp.columns.astype(str).str.strip()
+      lista_df.append(df_temp)
+    except Exception:
+      pass
 
-    if lista_df:
-        df_consolidado = pd.concat(lista_df, ignore_index=True)
-        
-        # Validar que exista la columna cédula antes de limpiar
-        if "cedula" in df_consolidado.columns:
-            # Limpiar puntos, guiones y espacios
-            df_consolidado["cedula_limpia"] = (
-                df_consolidado["cedula"]
-                .astype(str)
-                .str.replace(r"[\.\-\s]", "", regex=True)
-            )
-        return df_consolidado
-    
-    return pd.DataFrame()
+  if lista_df:
+    df_consolidado = pd.concat(lista_df, ignore_index=True)
 
-# 6. LÓGICA PRINCIPAL Y BUSCADOR
-try:
-    df = cargar_datos()
+    # Buscar automáticamente qué columna corresponde a la cédula
+    columnas_lower = {col.lower(): col for col in df_consolidado.columns}
+    columna_cedula_real = None
 
-    if not df.empty and "cedula_limpia" in df.columns:
-        
-        # Formulario de entrada
-        cedula_input = st.text_input(
-            "Ingresá tu número de Cédula de Identidad:",
-            placeholder="Ej: 4187526",
+    for posible in [
+        "cedula",
+        "nro_cedula",
+        "nro cedula",
+        "ci",
+        "documento",
+        "nro_documento",
+    ]:
+      if posible in columnas_lower:
+        columna_cedula_real = columnas_lower[posible]
+        break
+
+    # Si no encuentra coincidencia exacta, busca alguna columna que contenga la palabra 'cedula' o 'ci'
+    if not columna_cedula_real:
+      for col in df_consolidado.columns:
+        if "ced" in col.lower() or col.lower() == "ci":
+          columna_cedula_real = col
+          break
+
+    if columna_cedula_real:
+      # Renombrar estandarizadamente a 'cedula'
+      if columna_cedula_real != "cedula":
+        df_consolidado = df_consolidado.rename(
+            columns={columna_cedula_real: "cedula"}
         )
 
-        if st.button("🔍 CONSULTAR DATOS"):
-            if cedula_input:
-                # Limpiar el input del usuario de igual manera
-                clean_input = cedula_input.replace(".", "").replace("-", "").strip()
-                
-                # Filtrar el DataFrame
-                resultado = df[df["cedula_limpia"] == clean_input]
+      df_consolidado["cedula_limpia"] = (
+          df_consolidado["cedula"].astype(str).str.replace(".", "").str.strip()
+      )
+      return df_consolidado
 
-                if not resultado.empty:
-                    persona = resultado.iloc[0]
-                    
-                    # Manejo de datos nulos o faltantes y formato de separador de miles
-                    nombre = persona.get('nombre', '')
-                    apellido = persona.get('apellido', '')
-                    local = persona.get('local', 'No asignado')
-                    mesa = persona.get('mesa', 'No asignada')
-                    orden = persona.get('orden', 'No asignado')
-                    secc = persona.get('secc', 'No asignada')
-                    
-                    try:
-                        cedula_formateada = f"{int(float(persona['cedula'])):,}".replace(",", ".")
-                    except:
-                        cedula_formateada = persona.get('cedula', clean_input)
+  return pd.DataFrame()
 
-                    # Inyectar resultados en la tarjeta HTML
-                    st.markdown(
-                        f"""
-                        <div class="result-card">
-                            <h4 style="color: #d32f2f; margin-top: 0; text-align: left;">¡Votante Habilitado!</h4>
-                            <p><b>Nombre Completo:</b> {nombre} {apellido}</p>
-                            <p><b>Cédula:</b> {cedula_formateada}</p>
-                            <hr style="margin: 10px 0; border-top: 1px solid #eee;">
-                            <p><b>Local de Votación:</b> {local}</p>
-                            <p><b>Mesa:</b> {mesa}</p>
-                            <p><b>Orden:</b> {orden}</p>
-                            <p><b>Seccional N°:</b> {secc}</p>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.error("No se encontró el número de cédula ingresado en el padrón.")
-            else:
-                st.warning("Por favor, ingresa un número de cédula válido antes de consultar.")
-    else:
-        st.error("El sistema no detectó archivos .xlsx válidos en el directorio o no tienen la columna 'cedula'.")
+
+try:
+  df = cargar_datos()
+
+  if not df.empty:
+    st.markdown(
+        """
+        <div class="floating-card">
+        <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; font-weight: 800;">Número de cédula</h3>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cedula_input = st.text_input(
+        "Número de cédula",
+        placeholder="Ej: 1234567",
+        label_visibility="collapsed",
+    )
+
+    buscar_clic = st.button("Consultar")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if buscar_clic:
+      if cedula_input:
+        clean_input = (
+            cedula_input.replace(".", "").replace("-", "").strip()
+        )
+        resultado = df[df["cedula_limpia"] == clean_input]
+
+        if not resultado.empty:
+          persona = resultado.iloc[0]
+
+          # Intentar mostrar campos de forma flexible por si cambian de nombre
+          nombre = persona.get(
+              "nombre", persona.get("NOMBRE", persona.get("Nombres", ""))
+          )
+          apellido = persona.get(
+              "apellido", persona.get("APELLIDO", persona.get("Apellidos", ""))
+          )
+          local = persona.get(
+              "local", persona.get("LOCAL", persona.get("Lugar", "No especificado"))
+          )
+          secc = persona.get("secc", persona.get("SECC", "43"))
+
+          st.markdown(
+              f"""
+                <div class="result-box">
+                    <h4 style="color: #e53935; margin-top: 0; margin-bottom: 10px;">¡Votante Encontrado!</h4>
+                    <p style="margin: 4px 0;"><b>Nombre:</b> {nombre} {apellido}</p>
+                    <p style="margin: 4px 0;"><b>Cédula:</b> {int(persona['cedula']):,}".replace(',', '.')}</p>
+                    <p style="margin: 4px 0;"><b>Local de Votación:</b> {local}</p>
+                    <p style="margin: 4px 0;"><b>Seccional N°:</b> {secc}</p>
+                </div>
+                """,
+              unsafe_allow_html=True,
+          )
+        else:
+          st.markdown(
+              """
+                <div class="result-box" style="border-left-color: #f57c00;">
+                    <p style="margin:0; color: #d84315; font-weight: bold;">No se encontró esa cédula en la lista de la Seccional 43.</p>
+                </div>
+                """,
+              unsafe_allow_html=True,
+          )
+      else:
+        st.warning("Por favor, ingresa un número de cédula.")
+  else:
+    st.error(
+        "⚠️ No se detectó ningún archivo Excel (.xlsx) con la columna de"
+        " cédula en el repositorio. Asegúrate de haber subido tu archivo de"
+        " padrón."
+    )
 
 except Exception as e:
-    st.error(f"Error interno al procesar la base de datos: {e}")
+  st.error(f"Error al procesar la información: {e}")

@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS
+# Estilos CSS generales (Fondo y tarjetas sólidas/translúcidas)
 css_movil = (
     f"""
     <style>
@@ -59,6 +59,7 @@ css_movil = (
         max-width: 420px;
     }}
     
+    /* Tarjeta translúcida para la búsqueda */
     .translucent-card {{
         background: rgba(255, 255, 255, 0.90);
         backdrop-filter: blur(14px);
@@ -70,6 +71,7 @@ css_movil = (
         border: 1px solid rgba(255, 255, 255, 0.7);
     }}
 
+    /* Tarjeta de resultados 100% SÓLIDA y blanca para legibilidad perfecta */
     .solid-result-card {{
         background: #ffffff;
         padding: 22px 20px;
@@ -181,7 +183,6 @@ try:
           unsafe_allow_html=True,
       )
 
-      # Añadido key única para evitar conflicto de IDs
       cedula_input = st.text_input(
           "Número de cédula",
           placeholder="Ej: 2908339",
@@ -215,7 +216,7 @@ try:
           st.warning("Por favor, ingresa un número de cédula.")
 
     else:
-      # --- PANTALLA DE RESULTADOS ---
+      # --- PANTALLA DE RESULTADOS (TARJETA SÓLIDA 100% LEGIBLE) ---
       p = st.session_state.resultado_persona
 
       nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
@@ -237,7 +238,7 @@ try:
                 <div class="label-title">📍 Local de Votación</div>
                 <div class="value-box">{desc_local}</div>
 
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
                     <div style="flex: 1;">
                         <div class="label-title">🗳️ Mesa</div>
                         <div class="value-box" style="text-align: center;">{mesa}</div>
@@ -252,7 +253,6 @@ try:
       st.markdown(html_resultado, unsafe_allow_html=True)
 
       st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-      # Añadido key única para el botón volver
       if st.button("VOLVER", key="btn_volver_pantalla"):
         st.session_state.resultado_persona = None
         st.rerun()

@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 
-# Función para el fondo en base64
+# Función para cargar la portada en base64 de manera segura
 def obtener_imagen_base64():
   for archivo in ["portada.jpg", "portada.png", "portada.JPG", "portada.PNG"]:
     if os.path.exists(archivo):
@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS generales (Fondo y tarjetas sólidas/translúcidas)
+# Estilos CSS generales y componentes con fondo 100% sólido legible
 css_movil = (
     f"""
     <style>
@@ -46,7 +46,7 @@ css_movil = (
         content: "";
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.35);
+        background-color: rgba(0, 0, 0, 0.4);
         pointer-events: none;
         z-index: 0;
     }}
@@ -59,25 +59,13 @@ css_movil = (
         max-width: 420px;
     }}
     
-    /* Tarjeta translúcida para la búsqueda */
-    .translucent-card {{
-        background: rgba(255, 255, 255, 0.90);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        padding: 22px 20px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
-        margin-top: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.7);
-    }}
-
-    /* Tarjeta de resultados 100% SÓLIDA y blanca para legibilidad perfecta */
-    .solid-result-card {{
+    /* Contenedor blanco sólido universal para evitar problemas de lectura */
+    .card-box {{
         background: #ffffff;
-        padding: 22px 20px;
+        padding: 24px 20px;
         border-radius: 20px;
         box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.4);
-        margin-top: 10px;
+        margin-top: 15px;
         border: 2px solid #e53935;
     }}
     
@@ -129,7 +117,7 @@ css_movil = (
 st.markdown(css_movil, unsafe_allow_html=True)
 
 
-# --- CARGA DEL EXCEL (36 TABLAS) ---
+# --- CARGA DEL EXCEL ---
 @st.cache_data
 def cargar_padron():
   archivos_excel = glob.glob("*.xlsx") + glob.glob("*.XLSX")
@@ -177,7 +165,7 @@ try:
       # --- PANTALLA DE BÚSQUEDA ---
       st.markdown(
           """
-            <div class="translucent-card">
+            <div class="card-box">
             <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; font-weight: 800;">Número de cédula</h3>
             """,
           unsafe_allow_html=True,
@@ -187,10 +175,10 @@ try:
           "Número de cédula",
           placeholder="Ej: 2908339",
           label_visibility="collapsed",
-          key="input_cedula_principal",
+          key="input_cedula_unico",
       )
 
-      buscar_clic = st.button("Consultar", key="btn_consultar_principal")
+      buscar_clic = st.button("Consultar", key="btn_consultar_unico")
       st.markdown("</div>", unsafe_allow_html=True)
 
       if buscar_clic:
@@ -204,19 +192,12 @@ try:
             st.session_state.resultado_persona = resultado.iloc[0].to_dict()
             st.rerun()
           else:
-            st.markdown(
-                """
-                    <div class="translucent-card" style="border-left: 6px solid #f57c00; text-align: center;">
-                        <p style="margin:0; color: #d84315; font-weight: bold; font-size: 0.95rem;">No se encontró esa cédula en el padrón.</p>
-                    </div>
-                    """,
-                unsafe_allow_html=True,
-            )
+            st.warning("No se encontró esa cédula en el padrón.")
         else:
           st.warning("Por favor, ingresa un número de cédula.")
 
     else:
-      # --- PANTALLA DE RESULTADOS (TARJETA SÓLIDA 100% LEGIBLE) ---
+      # --- PANTALLA DE RESULTADOS (DISEÑO BLANCO SÓLIDO) ---
       p = st.session_state.resultado_persona
 
       nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
@@ -226,7 +207,7 @@ try:
       cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
       html_resultado = f"""
-            <div class="solid-result-card">
+            <div class="card-box">
                 <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 12px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
                 
                 <div class="label-title">👤 Nombre y Apellido</div>
@@ -253,7 +234,7 @@ try:
       st.markdown(html_resultado, unsafe_allow_html=True)
 
       st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-      if st.button("VOLVER", key="btn_volver_pantalla"):
+      if st.button("VOLVER", key="btn_volver_unico"):
         st.session_state.resultado_persona = None
         st.rerun()
 

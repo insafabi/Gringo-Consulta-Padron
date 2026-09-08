@@ -130,7 +130,7 @@ try:
     if st.session_state.resultado_persona is None:
       cedula_input = st.text_input(
           "Número de cédula",
-          placeholder="Ej: 2908339",
+          placeholder="Ej: 123456",
           label_visibility="collapsed",
           key="input_cedula_unico",
       )

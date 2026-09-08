@@ -51,7 +51,7 @@ css_movil = (
     .block-container {{
         position: relative;
         z-index: 1;
-        padding-top: 7.5rem;
+        padding-top: 23rem;
         padding-bottom: 3rem;
         max-width: 420px;
     }}

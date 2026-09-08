@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import streamlit as st
 
-# Configuración de la página
+# Configuración de la página optimizada para móvil
 st.set_page_config(
     page_title="Consulta de Padrón Electoral - Seccional 43",
     page_icon="🔴",
@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 
-# Función para convertir la imagen local a base64 para el fondo
+# Función para convertir la imagen local a base64
 def obtener_imagen_base64():
   for archivo in ["portada.jpg", "portada.png", "portada.JPG", "portada.PNG"]:
     if os.path.exists(archivo):
@@ -26,49 +26,54 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS
-css_fondo = (
+# Estilos CSS adaptados para móvil y la imagen con tamaño natural/proporcional
+css_movil = (
     f"""
     <style>
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
     
+    /* Fondo general neutro y limpio para que la tarjeta y la imagen brillen */
     .stApp {{
-        background-image: url("{img_base64}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    
-    .stApp::before {{
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.35);
-        pointer-events: none;
-        z-index: 0;
+        background-color: #f4f6f9;
     }}
 
+    /* Contenedor principal ajustado para centrarse perfectamente en móviles */
     .block-container {{
-        position: relative;
-        z-index: 1;
-        padding-top: 3rem;
-        max-width: 500px;
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+        max-width: 480px;
     }}
     
+    /* Contenedor de la imagen de portada con tamaño natural/proporcional y bordes redondeados */
+    .banner-container {{
+        width: 100%;
+        text-align: center;
+        margin-bottom: 15px;
+    }}
+    .banner-img {{
+        width: 100%;
+        max-width: 450px;
+        height: auto;
+        border-radius: 16px;
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }}
+
+    /* Tarjeta flotante moderna estilo app móvil */
     .floating-card {{
-        background: rgba(255, 255, 255, 0.90);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 25px 20px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
-        margin-top: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: #ffffff;
+        padding: 20px 18px;
+        border-radius: 18px;
+        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+        margin-top: 10px;
+        border: 1px solid #eaeaea;
     }}
     
+    /* Botón rojo institucional */
     div.stButton > button:first-child {{
         background-color: #e53935 !important;
         color: white !important;
@@ -78,21 +83,21 @@ css_fondo = (
         border: none;
         padding: 0.75rem 1rem;
         width: 100%;
-        box-shadow: 0px 4px 12px rgba(229, 57, 53, 0.4);
+        box-shadow: 0px 4px 12px rgba(229, 57, 53, 0.3);
         transition: all 0.2s ease;
     }}
     div.stButton > button:first-child:hover {{
         background-color: #c62828 !important;
     }}
 
+    /* Tarjeta de resultado */
     .result-box {{
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        padding: 20px;
-        border-radius: 16px;
+        background: #ffffff;
+        padding: 18px;
+        border-radius: 14px;
         border-left: 6px solid #e53935;
-        box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
-        margin-top: 20px;
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+        margin-top: 15px;
         color: #212529;
     }}
     </style>
@@ -100,56 +105,64 @@ css_fondo = (
     if img_base64
     else """
     <style>
-    .stApp { background-color: #f0f2f6; }
+    .stApp { background-color: #f4f6f9; }
     </style>
     """
 )
 
-st.markdown(css_fondo, unsafe_allow_html=True)
+st.markdown(css_movil, unsafe_allow_html=True)
+
+# Mostrar la imagen como banner superior adaptable (no como fondo gigante de PC)
+if img_base64:
+  st.markdown(
+      f"""
+        <div class="banner-container">
+            <img src="{img_base64}" class="banner-img">
+        </div>
+        """,
+      unsafe_allow_html=True,
+  )
 
 
-# --- CARGA INTELIGENTE DE DATOS ---
+# --- CARGA DE LAS 36 PÁGINAS / HOJAS DEL EXCEL ---
 @st.cache_data
-def cargar_datos():
+def cargar_padron():
   archivos_excel = glob.glob("*.xlsx") + glob.glob("*.XLSX")
   lista_df = []
 
   for archivo in archivos_excel:
     try:
-      df_temp = pd.read_excel(archivo)
-      df_temp.columns = df_temp.columns.astype(str).str.strip()
-      lista_df.append(df_temp)
+      # Leer todas las hojas del archivo Excel (del 1 al 36 o las que tenga)
+      excel_file = pd.ExcelFile(archivo)
+      for hoja in excel_file.sheet_names:
+        df_hoja = pd.read_excel(archivo, sheet_name=hoja)
+        # Limpiar espacios en los nombres de las columnas
+        df_hoja.columns = df_hoja.columns.astype(str).str.strip()
+        lista_df.append(df_hoja)
     except Exception:
       pass
 
   if lista_df:
     df_consolidado = pd.concat(lista_df, ignore_index=True)
-    columnas_lower = {col.lower(): col for col in df_consolidado.columns}
-    columna_cedula_real = None
 
-    for posible in [
-        "cedula",
-        "nro_cedula",
-        "nro cedula",
-        "ci",
-        "documento",
-        "nro_documento",
-    ]:
+    # Buscar la columna exacta o alternativas de documento
+    columnas_lower = {col.lower(): col for col in df_consolidado.columns}
+    columna_real = None
+
+    for posible in ["nº de documento", "n° de documento", "nro de documento", "cedula", "ci", "documento"]:
       if posible in columnas_lower:
-        columna_cedula_real = columnas_lower[posible]
+        columna_real = columnas_lower[posible]
         break
 
-    if not columna_cedula_real:
+    if not columna_real:
       for col in df_consolidado.columns:
-        if "ced" in col.lower() or col.lower() == "ci":
-          columna_cedula_real = col
+        if "documento" in col.lower() or "ced" in col.lower() or col.lower() == "ci":
+          columna_real = col
           break
 
-    if columna_cedula_real:
-      if columna_cedula_real != "cedula":
-        df_consolidado = df_consolidado.rename(
-            columns={columna_cedula_real: "cedula"}
-        )
+    if columna_real:
+      if columna_real != "cedula":
+        df_consolidado = df_consolidado.rename(columns={columna_real: "cedula"})
 
       df_consolidado["cedula_limpia"] = (
           df_consolidado["cedula"].astype(str).str.replace(".", "").str.strip()
@@ -160,13 +173,13 @@ def cargar_datos():
 
 
 try:
-  df = cargar_datos()
+  df = cargar_padron()
 
   if not df.empty:
     st.markdown(
         """
         <div class="floating-card">
-        <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; font-weight: 800;">Número de cédula</h3>
+        <h3 style="color: #222; text-align: center; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; font-weight: 700;">Número de cédula</h3>
         """,
         unsafe_allow_html=True,
     )
@@ -191,28 +204,22 @@ try:
         if not resultado.empty:
           persona = resultado.iloc[0]
 
-          nombre = persona.get(
-              "nombre", persona.get("NOMBRE", persona.get("Nombres", ""))
-          )
-          apellido = persona.get(
-              "apellido", persona.get("APELLIDO", persona.get("Apellidos", ""))
-          )
-          local = persona.get(
-              "local", persona.get("LOCAL", persona.get("Lugar", "No especificado"))
-          )
-          secc = persona.get("secc", persona.get("SECC", "43"))
+          # Detección flexible de los nombres de columnas para los datos personales
+          nombre = persona.get("nombre", persona.get("NOMBRE", persona.get("Nombres", "")))
+          apellido = persona.get("apellido", persona.get("APELLIDO", persona.get("Apellidos", "")))
+          local = persona.get("local", persona.get("LOCAL", persona.get("Lugar de Votacion", "No especificado")))
+          secc = persona.get("secc", persona.get("SECC", persona.get("Seccional", "43")))
 
-          # Formatear la cédula de manera segura fuera de las llaves complejas
           cedula_str = f"{int(persona['cedula']):,}".replace(",", ".")
 
           st.markdown(
               f"""
                 <div class="result-box">
-                    <h4 style="color: #e53935; margin-top: 0; margin-bottom: 10px;">¡Votante Encontrado!</h4>
-                    <p style="margin: 4px 0;"><b>Nombre:</b> {nombre} {apellido}</p>
-                    <p style="margin: 4px 0;"><b>Cédula:</b> {cedula_str}</p>
-                    <p style="margin: 4px 0;"><b>Local de Votación:</b> {local}</p>
-                    <p style="margin: 4px 0;"><b>Seccional N°:</b> {secc}</p>
+                    <h4 style="color: #e53935; margin-top: 0; margin-bottom: 10px; font-size: 1.1rem;">¡Votante Encontrado!</h4>
+                    <p style="margin: 5px 0; font-size: 0.95rem;"><b>Nombre:</b> {nombre} {apellido}</p>
+                    <p style="margin: 5px 0; font-size: 0.95rem;"><b>Cédula:</b> {cedula_str}</p>
+                    <p style="margin: 5px 0; font-size: 0.95rem;"><b>Local de Votación:</b> {local}</p>
+                    <p style="margin: 5px 0; font-size: 0.95rem;"><b>Seccional N°:</b> {secc}</p>
                 </div>
                 """,
               unsafe_allow_html=True,
@@ -221,7 +228,7 @@ try:
           st.markdown(
               """
                 <div class="result-box" style="border-left-color: #f57c00;">
-                    <p style="margin:0; color: #d84315; font-weight: bold;">No se encontró esa cédula en la lista de la Seccional 43.</p>
+                    <p style="margin:0; color: #d84315; font-weight: bold; font-size: 0.95rem;">No se encontró esa cédula en el padrón de la Seccional 43.</p>
                 </div>
                 """,
               unsafe_allow_html=True,
@@ -230,9 +237,7 @@ try:
         st.warning("Por favor, ingresa un número de cédula.")
   else:
     st.error(
-        "⚠️ No se detectó ningún archivo Excel (.xlsx) con la columna de"
-        " cédula en el repositorio. Asegúrate de haber subido tu archivo de"
-        " padrón."
+        "⚠️ No se detectó ningún archivo Excel (.xlsx) válido en el repositorio o no contiene la columna 'Nº de Documento'."
     )
 
 except Exception as e:

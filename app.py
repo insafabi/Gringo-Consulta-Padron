@@ -56,7 +56,7 @@ css_movil = (
     .block-container {{
         position: relative;
         z-index: 1;
-        padding-top: 4rem;
+        padding-top: 3rem;
         padding-bottom: 3rem;
         max-width: 440px;
     }}
@@ -92,7 +92,7 @@ css_movil = (
 
     /* Tarjeta de resultados flotante con el mismo estilo translúcido */
     .result-box {{
-        background: rgba(255, 255, 255, 0.90);
+        background: rgba(255, 255, 255, 0.88);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 18px;
@@ -113,7 +113,7 @@ css_movil = (
     }}
 
     .field-value {{
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.95);
         padding: 10px 14px;
         border-radius: 10px;
         font-weight: 600;
@@ -206,16 +206,18 @@ try:
         if not resultado.empty:
           persona = resultado.iloc[0]
 
-          nombre = persona.get("NOMBRE", "")
-          apellido = persona.get("APELLIDO", "")
+          nombre = str(persona.get("NOMBRE", ""))
+          apellido = str(persona.get("APELLIDO", ""))
           nombre_completo = f"{nombre} {apellido}".strip()
-          desc_local = persona.get("DESC_LOCAL", persona.get("local", ""))
+          desc_local = str(
+              persona.get("DESC_LOCAL", persona.get("local", ""))
+          )
           mesa = str(persona.get("mesa", "-"))
           orden = str(persona.get("orden", "-"))
 
           cedula_str = f"{int(persona['cedula']):,}".replace(",", ".")
 
-          # Estructura idéntica a tu segunda imagen de referencia (sin secc)
+          # Se agregó unsafe_allow_html=True para que pinte bien el diseño translúcido
           st.markdown(
               f"""
                 <div class="result-box">

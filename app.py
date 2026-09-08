@@ -128,11 +128,6 @@ try:
       st.session_state.resultado_persona = None
 
     if st.session_state.resultado_persona is None:
-      html_busqueda = """<div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
-<h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
-</div>"""
-      st.markdown(html_busqueda, unsafe_allow_html=True)
-
       cedula_input = st.text_input(
           "Número de cédula",
           placeholder="Ej: 2908339",

@@ -34,7 +34,7 @@ css_movil = (
     .stApp {{
         background-image: url("{img_base64}");
         background-size: cover;
-        background-position: center;
+        background-position: top center;
         background-repeat: no-repeat;
         background-attachment: fixed;
     }}
@@ -51,7 +51,7 @@ css_movil = (
     .block-container {{
         position: relative;
         z-index: 1;
-        padding-top: 3rem;
+        padding-top: 7.5rem;
         padding-bottom: 3rem;
         max-width: 420px;
     }}

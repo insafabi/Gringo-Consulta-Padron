@@ -4,7 +4,6 @@ import os
 import pandas as pd
 import streamlit as st
 
-# Configuración de la página
 st.set_page_config(
     page_title="Consulta Padrón - Seccional 43",
     page_icon="🔴",
@@ -12,7 +11,6 @@ st.set_page_config(
 )
 
 
-# Función para cargar la imagen de fondo en base64
 def obtener_imagen_base64():
   for archivo in ["portada.jpg", "portada.png", "portada.JPG", "portada.PNG"]:
     if os.path.exists(archivo):
@@ -26,7 +24,6 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS generales y forzados para contenedores de Streamlit
 css_movil = (
     f"""
     <style>
@@ -59,34 +56,6 @@ css_movil = (
         max-width: 420px;
     }}
     
-    /* Contenedor principal translúcido tipo cristal */
-    div.element-container:has(div.card-wrapper) {{
-        background: rgba(255, 255, 255, 0.88) !important;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        padding: 24px 20px;
-        border-radius: 20px;
-        box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        margin-top: 15px;
-    }}
-
-    /* Estilo profesional para las cajas de resultados nativas de Streamlit (st.info) */
-    .stInfo {{
-        background-color: #ffffff !important;
-        color: #111111 !important;
-        border: 1px solid #dcdcdc !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08);
-    }}
-    .stInfo p {{
-        color: #111111 !important;
-    }}
-
-    /* Botón rojo personalizado */
     div.stButton > button:first-child {{
         background-color: #e53935 !important;
         color: white !important;
@@ -115,7 +84,6 @@ css_movil = (
 st.markdown(css_movil, unsafe_allow_html=True)
 
 
-# --- CARGA DEL EXCEL (36 TABLAS) ---
 @st.cache_data
 def cargar_padron():
   archivos_excel = glob.glob("*.xlsx") + glob.glob("*.XLSX")
@@ -160,14 +128,12 @@ try:
       st.session_state.resultado_persona = None
 
     if st.session_state.resultado_persona is None:
-      # --- PANTALLA DE BÚSQUEDA ---
-      st.markdown('<div class="card-wrapper"></div>', unsafe_allow_html=True)
-      st.markdown(
-          "<h3 style='color: #111; text-align: center; margin-top: 0;"
-          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
-          " 800;'>Número de cédula</h3>",
-          unsafe_allow_html=True,
-      )
+      html_busqueda = """
+            <div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
+            </div>
+            """
+      st.markdown(html_busqueda, unsafe_allow_html=True)
 
       cedula_input = st.text_input(
           "Número de cédula",
@@ -194,7 +160,6 @@ try:
           st.warning("Por favor, ingresa un número de cédula.")
 
     else:
-      # --- PANTALLA DE RESULTADOS ---
       p = st.session_state.resultado_persona
 
       nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
@@ -203,52 +168,34 @@ try:
       orden = str(p.get("orden", "-"))
       cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
-      st.markdown('<div class="card-wrapper"></div>', unsafe_allow_html=True)
-      st.markdown(
-          "<h3 style='color: #111; text-align: center; margin-top: 0;"
-          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
-          " 800;'>Datos del elector</h3>",
-          unsafe_allow_html=True,
-      )
+      html_resultado = f"""
+            <div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
+                
+                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">👤 Nombre y Apellido</div>
+                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{nombre_completo}</div>
 
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>👤 Nombre y Apellido</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(nombre_completo)
+                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">🆔 Cédula de Identidad</div>
+                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{cedula_str}</div>
 
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>🆔 Cédula de Identidad</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(cedula_str)
+                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">📍 Local de Votación</div>
+                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{desc_local}</div>
 
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>📍 Local de Votación</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(desc_local)
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">🗳️ Mesa</div>
+                        <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{mesa}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">📋 Orden</div>
+                        <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{orden}</div>
+                    </div>
+                </div>
+            </div>
+            """
+      st.markdown(html_resultado, unsafe_allow_html=True)
 
-      col1, col2 = st.columns(2)
-      with col1:
-        st.markdown(
-            "<span style='color: #c62828; font-weight: 800; font-size:"
-            " 0.75rem; text-transform: uppercase;'>🗳️ Mesa</span>",
-            unsafe_allow_html=True,
-        )
-        st.info(mesa)
-      with col2:
-        st.markdown(
-            "<span style='color: #c62828; font-weight: 800; font-size:"
-            " 0.75rem; text-transform: uppercase;'>📋 Orden</span>",
-            unsafe_allow_html=True,
-        )
-        st.info(orden)
-
-      st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+      st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
       if st.button("VOLVER", key="btn_volver_unico"):
         st.session_state.resultado_persona = None
         st.rerun()

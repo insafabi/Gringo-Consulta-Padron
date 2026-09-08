@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS con tarjeta translúcida elegante y cajas de texto internas 100% sólidas
+# Estilos CSS limpios y seguros para contenedores y campos
 css_movil = (
     f"""
     <style>
@@ -59,7 +59,7 @@ css_movil = (
         max-width: 420px;
     }}
     
-    /* Contenedor principal translúcido tipo cristal */
+    /* Contenedor translúcido elegante tipo cristal */
     .card-box {{
         background: rgba(255, 255, 255, 0.88);
         backdrop-filter: blur(14px);
@@ -86,29 +86,6 @@ css_movil = (
     }}
     div.stButton > button:first-child:hover {{
         background-color: #c62828 !important;
-    }}
-
-    /* Etiquetas llamativas */
-    .label-title {{
-        font-size: 0.75rem;
-        font-weight: 800;
-        color: #c62828;
-        text-transform: uppercase;
-        margin-top: 14px;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-    }}
-
-    /* Cuadros internos 100% SÓLIDOS y blancos para máxima legibilidad */
-    .value-box {{
-        background: #ffffff;
-        padding: 12px 14px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #111111;
-        border: 2px solid #e0e0e0;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
     }}
     </style>
     """
@@ -169,11 +146,11 @@ try:
 
     if st.session_state.resultado_persona is None:
       # --- PANTALLA DE BÚSQUEDA ---
+      st.markdown('<div class="card-box">', unsafe_allow_html=True)
       st.markdown(
-          """
-            <div class="card-box">
-                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
-            """,
+          "<h3 style='color: #111; text-align: center; margin-top: 0;"
+          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
+          " 800;'>Número de cédula</h3>",
           unsafe_allow_html=True,
       )
 
@@ -203,7 +180,7 @@ try:
           st.warning("Por favor, ingresa un número de cédula.")
 
     else:
-      # --- PANTALLA DE RESULTADOS (TARJETA TRANSLÚCIDA CON CAJAS SÓLIDAS) ---
+      # --- PANTALLA DE RESULTADOS CON COMPONENTES NATIVOS 100% SEGUROS ---
       p = st.session_state.resultado_persona
 
       nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
@@ -212,37 +189,58 @@ try:
       orden = str(p.get("orden", "-"))
       cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
-      html_resultado = f"""
-            <div class="card-box">
-                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
-                
-                <div class="label-title">👤 Nombre y Apellido</div>
-                <div class="value-box">{nombre_completo}</div>
+      st.markdown('<div class="card-box">', unsafe_allow_html=True)
+      st.markdown(
+          "<h3 style='color: #111; text-align: center; margin-top: 0;"
+          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
+          " 800;'>Datos del elector</h3>",
+          unsafe_allow_html=True,
+      )
 
-                <div class="label-title">🆔 Cédula de Identidad</div>
-                <div class="value-box">{cedula_str}</div>
+      # Uso de elementos nativos de Streamlit con cajas y textos perfectamente legibles
+      st.markdown(
+          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
+          " text-transform: uppercase;'>👤 Nombre y Apellido</span>",
+          unsafe_allow_html=True,
+      )
+      st.info(nombre_completo)
 
-                <div class="label-title">📍 Local de Votación</div>
-                <div class="value-box">{desc_local}</div>
+      st.markdown(
+          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
+          " text-transform: uppercase;'>🆔 Cédula de Identidad</span>",
+          unsafe_allow_html=True,
+      )
+      st.info(cedula_str)
 
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <div class="label-title">🗳️ Mesa</div>
-                        <div class="value-box" style="text-align: center;">{mesa}</div>
-                    </div>
-                    <div style="flex: 1;">
-                        <div class="label-title">📋 Orden</div>
-                        <div class="value-box" style="text-align: center;">{orden}</div>
-                    </div>
-                </div>
-            </div>
-            """
-      st.markdown(html_resultado, unsafe_allow_html=True)
+      st.markdown(
+          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
+          " text-transform: uppercase;'>📍 Local de Votación</span>",
+          unsafe_allow_html=True,
+      )
+      st.info(desc_local)
 
-      st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+      col1, col2 = st.columns(2)
+      with col1:
+        st.markdown(
+            "<span style='color: #c62828; font-weight: 800; font-size:"
+            " 0.75rem; text-transform: uppercase;'>🗳️ Mesa</span>",
+            unsafe_allow_html=True,
+        )
+        st.info(mesa)
+      with col2:
+        st.markdown(
+            "<span style='color: #c62828; font-weight: 800; font-size:"
+            " 0.75rem; text-transform: uppercase;'>📋 Orden</span>",
+            unsafe_allow_html=True,
+        )
+        st.info(orden)
+
+      st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
       if st.button("VOLVER", key="btn_volver_unico"):
         st.session_state.resultado_persona = None
         st.rerun()
+
+      st.markdown("</div>", unsafe_allow_html=True)
 
   else:
     st.error(

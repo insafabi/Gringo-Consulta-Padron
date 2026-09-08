@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS translúcidos idénticos al diseño de referencia
+# Estilos CSS generales para la tarjeta translúcida y el fondo móvil
 css_movil = (
     f"""
     <style>
@@ -59,17 +59,12 @@ css_movil = (
         max-width: 420px;
     }}
     
-    .translucent-card {{
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        padding: 22px 20px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.25);
-        margin-top: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.7);
+    /* Contenedor translúcido principal */
+    .element-container {{
+        position: relative;
+        z-index: 1;
     }}
-    
+
     div.stButton > button:first-child {{
         background-color: #e53935 !important;
         color: white !important;
@@ -84,27 +79,6 @@ css_movil = (
     }}
     div.stButton > button:first-child:hover {{
         background-color: #c62828 !important;
-    }}
-
-    .label-title {{
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #e53935;
-        text-transform: uppercase;
-        margin-top: 10px;
-        margin-bottom: 2px;
-        letter-spacing: 0.5px;
-    }}
-
-    .value-box {{
-        background: #ffffff;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #111;
-        border: 1px solid #e2e8f0;
-        box-shadow: inset 0px 1px 2px rgba(0,0,0,0.04);
     }}
     </style>
     """
@@ -160,92 +134,111 @@ try:
   df = cargar_padron()
 
   if not df.empty:
-    # Verificamos si ya realizó una búsqueda guardada en la sesión
     if "resultado_persona" not in st.session_state:
       st.session_state.resultado_persona = None
 
-    if st.session_state.resultado_persona is None:
-      # Pantalla 1: Buscador
-      st.markdown(
-          """
-            <div class="translucent-card">
-            <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; font-weight: 800;">Número de cédula</h3>
-            """,
-          unsafe_allow_html=True,
-      )
+    # Contenedor visual translúcido usando st.container
+    with st.container():
+      if st.session_state.resultado_persona is None:
+        # --- PANTALLA DE BÚSQUEDA ---
+        st.markdown(
+            "<h3"
+            ' style="color: #111; text-align: center; margin-top: 0;'
+            ' margin-bottom: 12px; font-size: 1.1rem; font-weight:'
+            ' 800;">Número de cédula</h3>',
+            unsafe_allow_html=True,
+        )
 
-      cedula_input = st.text_input(
-          "Número de cédula",
-          placeholder="Ej: 2908339",
-          label_visibility="collapsed",
-      )
+        cedula_input = st.text_input(
+            "Número de cédula",
+            placeholder="Ej: 2908339",
+            label_visibility="collapsed",
+        )
 
-      buscar_clic = st.button("Consultar")
-      st.markdown("</div>", unsafe_allow_html=True)
+        buscar_clic = st.button("Consultar")
 
-      if buscar_clic:
-        if cedula_input:
-          clean_input = (
-              cedula_input.replace(".", "").replace("-", "").strip()
-          )
-          resultado = df[df["cedula_limpia"] == clean_input]
-
-          if not resultado.empty:
-            st.session_state.resultado_persona = resultado.iloc[0].to_dict()
-            st.rerun()
-          else:
-            st.markdown(
-                """
-                    <div class="translucent-card" style="border-left: 6px solid #f57c00; text-align: center;">
-                        <p style="margin:0; color: #d84315; font-weight: bold; font-size: 0.95rem;">No se encontró esa cédula en el padrón.</p>
-                    </div>
-                    """,
-                unsafe_allow_html=True,
+        if buscar_clic:
+          if cedula_input:
+            clean_input = (
+                cedula_input.replace(".", "").replace("-", "").strip()
             )
-        else:
-          st.warning("Por favor, ingresa un número de cédula.")
+            resultado = df[df["cedula_limpia"] == clean_input]
 
-    else:
-      # Pantalla 2: Resultados limpios y translúcidos
-      p = st.session_state.resultado_persona
+            if not resultado.empty:
+              st.session_state.resultado_persona = resultado.iloc[0].to_dict()
+              st.rerun()
+            else:
+              st.warning("No se encontró esa cédula en el padrón.")
+          else:
+            st.warning("Por favor, ingresa un número de cédula.")
 
-      nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
-      desc_local = str(p.get("DESC_LOCAL", p.get("local", "")))
-      mesa = str(p.get("mesa", "-"))
-      orden = str(p.get("orden", "-"))
-      cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
+      else:
+        # --- PANTALLA DE RESULTADOS (DISEÑO LIMPIO NATIVO) ---
+        p = st.session_state.resultado_persona
 
-      html_resultado = f"""
-            <div class="translucent-card">
-                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
-                
-                <div class="label-title">👤 Nombre y Apellido</div>
-                <div class="value-box">{nombre_completo}</div>
+        nombre_completo = (
+            f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
+        )
+        desc_local = str(p.get("DESC_LOCAL", p.get("local", "")))
+        mesa = str(p.get("mesa", "-"))
+        orden = str(p.get("orden", "-"))
+        cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
-                <div class="label-title">🆔 Cédula de Identidad</div>
-                <div class="value-box">{cedula_str}</div>
+        st.markdown(
+            "<h3"
+            ' style="color: #111; text-align: center; margin-top: 0;'
+            ' margin-bottom: 15px; font-size: 1.15rem; font-weight:'
+            ' 800;">Datos del elector</h3>',
+            unsafe_allow_html=True,
+        )
 
-                <div class="label-title">📍 Local de Votación</div>
-                <div class="value-box">{desc_local}</div>
+        # Usando campos limpios de Streamlit
+        st.markdown(
+            '<p style="font-size: 0.72rem; font-weight: 700; color: #e53935;'
+            ' text-transform: uppercase; margin-bottom: -10px;">👤 Nombre y'
+            " Apellido</p>",
+            unsafe_allow_html=True,
+        )
+        st.info(nombre_completo)
 
-                <div style="display: flex; gap: 10px; margin-top: 2px;">
-                    <div style="flex: 1;">
-                        <div class="label-title">🗳️ Mesa</div>
-                        <div class="value-box" style="text-align: center;">{mesa}</div>
-                    </div>
-                    <div style="flex: 1;">
-                        <div class="label-title">📋 Orden</div>
-                        <div class="value-box" style="text-align: center;">{orden}</div>
-                    </div>
-                </div>
-            </div>
-            """
-      st.markdown(html_resultado, unsafe_allow_html=True)
+        st.markdown(
+            '<p style="font-size: 0.72rem; font-weight: 700; color: #e53935;'
+            ' text-transform: uppercase; margin-bottom: -10px;">🆔 Cédula de'
+            " Identidad</p>",
+            unsafe_allow_html=True,
+        )
+        st.info(cedula_str)
 
-      st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-      if st.button("VOLVER"):
-        st.session_state.resultado_persona = None
-        st.rerun()
+        st.markdown(
+            '<p style="font-size: 0.72rem; font-weight: 700; color: #e53935;'
+            ' text-transform: uppercase; margin-bottom: -10px;">📍 Local de'
+            " Votación</p>",
+            unsafe_allow_html=True,
+        )
+        st.info(desc_local)
+
+        col1, col2 = st.columns(2)
+        with col1:
+          st.markdown(
+              '<p style="font-size: 0.72rem; font-weight: 700; color: #e53935;'
+              ' text-transform: uppercase; margin-bottom: -10px;">🗳️'
+              " Mesa</p>",
+              unsafe_allow_html=True,
+          )
+          st.info(mesa)
+        with col2:
+          st.markdown(
+              '<p style="font-size: 0.72rem; font-weight: 700; color: #e53935;'
+              ' text-transform: uppercase; margin-bottom: -10px;">📋'
+              " Orden</p>",
+              unsafe_allow_html=True,
+          )
+          st.info(orden)
+
+        st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+        if st.button("VOLVER"):
+          st.session_state.resultado_persona = None
+          st.rerun()
 
   else:
     st.error(

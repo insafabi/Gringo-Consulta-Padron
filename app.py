@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS profesionales y limpios
+# Estilos CSS con tarjeta translúcida elegante y cajas de texto internas 100% sólidas
 css_movil = (
     f"""
     <style>
@@ -46,7 +46,7 @@ css_movil = (
         content: "";
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
+        background-color: rgba(0, 0, 0, 0.45);
         pointer-events: none;
         z-index: 0;
     }}
@@ -59,16 +59,16 @@ css_movil = (
         max-width: 420px;
     }}
     
-    /* Contenedor principal estilo tarjeta elegante */
-    .card-container {{
-        background: rgba(255, 255, 255, 0.95);
+    /* Contenedor principal translúcido tipo cristal */
+    .card-box {{
+        background: rgba(255, 255, 255, 0.88);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
         padding: 24px 20px;
         border-radius: 20px;
-        box-shadow: 0px 12px 35px rgba(0, 0, 0, 0.4);
+        box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4);
         margin-top: 15px;
-        border: 2px solid #e53935;
+        border: 1px solid rgba(255, 255, 255, 0.8);
     }}
     
     /* Botones personalizados */
@@ -86,6 +86,29 @@ css_movil = (
     }}
     div.stButton > button:first-child:hover {{
         background-color: #c62828 !important;
+    }}
+
+    /* Etiquetas llamativas */
+    .label-title {{
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #c62828;
+        text-transform: uppercase;
+        margin-top: 14px;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }}
+
+    /* Cuadros internos 100% SÓLIDOS y blancos para máxima legibilidad */
+    .value-box {{
+        background: #ffffff;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #111111;
+        border: 2px solid #e0e0e0;
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
     }}
     </style>
     """
@@ -144,108 +167,82 @@ try:
     if "resultado_persona" not in st.session_state:
       st.session_state.resultado_persona = None
 
-    # Contenedor principal con tarjeta blanca sólida
-    with st.container():
+    if st.session_state.resultado_persona is None:
+      # --- PANTALLA DE BÚSQUEDA ---
       st.markdown(
-          '<div class="card-container">', unsafe_allow_html=True
+          """
+            <div class="card-box">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
+            """,
+          unsafe_allow_html=True,
       )
 
-      if st.session_state.resultado_persona is None:
-        # --- PANTALLA DE BÚSQUEDA ---
-        st.markdown(
-            '<h3 style="color: #111; text-align: center; margin-top: 0;'
-            ' margin-bottom: 15px; font-size: 1.15rem; font-weight:'
-            ' 800;">Número de cédula</h3>',
-            unsafe_allow_html=True,
-        )
+      cedula_input = st.text_input(
+          "Número de cédula",
+          placeholder="Ej: 2908339",
+          label_visibility="collapsed",
+          key="input_cedula_unico",
+      )
 
-        cedula_input = st.text_input(
-            "Número de cédula",
-            placeholder="Ej: 2908339",
-            label_visibility="collapsed",
-            key="input_cedula_unico",
-        )
-
-        buscar_clic = st.button("Consultar", key="btn_consultar_unico")
-
-        if buscar_clic:
-          if cedula_input:
-            clean_input = (
-                cedula_input.replace(".", "").replace("-", "").strip()
-            )
-            resultado = df[df["cedula_limpia"] == clean_input]
-
-            if not resultado.empty:
-              st.session_state.resultado_persona = resultado.iloc[0].to_dict()
-              st.rerun()
-            else:
-              st.warning("No se encontró esa cédula en el padrón.")
-          else:
-            st.warning("Por favor, ingresa un número de cédula.")
-
-      else:
-        # --- PANTALLA DE RESULTADOS (USO DE COMPONENTES NATIVOS SEGUROS) ---
-        p = st.session_state.resultado_persona
-
-        nombre_completo = (
-            f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
-        )
-        desc_local = str(p.get("DESC_LOCAL", p.get("local", "")))
-        mesa = str(p.get("mesa", "-"))
-        orden = str(p.get("orden", "-"))
-        cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
-
-        st.markdown(
-            '<h3 style="color: #111; text-align: center; margin-top: 0;'
-            ' margin-bottom: 15px; font-size: 1.15rem; font-weight:'
-            ' 800;">Datos del elector</h3>',
-            unsafe_allow_html=True,
-        )
-
-        # Usamos texto limpio en Markdown para las etiquetas y cajitas estándar para los valores
-        st.markdown(
-            '<span style="color: #e53935; font-weight: 700; font-size: 0.75rem;'
-            ' text-transform: uppercase;">👤 Nombre y Apellido</span>',
-            unsafe_allow_html=True,
-        )
-        st.info(nombre_completo)
-
-        st.markdown(
-            '<span style="color: #e53935; font-weight: 700; font-size: 0.75rem;'
-            ' text-transform: uppercase;">🆔 Cédula de Identidad</span>',
-            unsafe_allow_html=True,
-        )
-        st.info(cedula_str)
-
-        st.markdown(
-            '<span style="color: #e53935; font-weight: 700; font-size: 0.75rem;'
-            ' text-transform: uppercase;">📍 Local de Votación</span>',
-            unsafe_allow_html=True,
-        )
-        st.info(desc_local)
-
-        col1, col2 = st.columns(2)
-        with col1:
-          st.markdown(
-              '<span style="color: #e53935; font-weight: 700; font-size:'
-              ' 0.75rem; text-transform: uppercase;">🗳️ Mesa</span>',
-              unsafe_allow_html=True,
-          )
-          st.info(mesa)
-        with col2:
-          st.markdown(
-              '<span style="color: #e53935; font-weight: 700; font-size:'
-              ' 0.75rem; text-transform: uppercase;">📋 Orden</span>',
-              unsafe_allow_html=True,
-          )
-          st.info(orden)
-
-        st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
-        if st.button("VOLVER", key="btn_volver_unico"):
-          st.session_state.resultado_persona = None
-          st.rerun()
-
+      buscar_clic = st.button("Consultar", key="btn_consultar_unico")
       st.markdown("</div>", unsafe_allow_html=True)
+
+      if buscar_clic:
+        if cedula_input:
+          clean_input = (
+              cedula_input.replace(".", "").replace("-", "").strip()
+          )
+          resultado = df[df["cedula_limpia"] == clean_input]
+
+          if not resultado.empty:
+            st.session_state.resultado_persona = resultado.iloc[0].to_dict()
+            st.rerun()
+          else:
+            st.warning("No se encontró esa cédula en el padrón.")
+        else:
+          st.warning("Por favor, ingresa un número de cédula.")
+
+    else:
+      # --- PANTALLA DE RESULTADOS (TARJETA TRANSLÚCIDA CON CAJAS SÓLIDAS) ---
+      p = st.session_state.resultado_persona
+
+      nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
+      desc_local = str(p.get("DESC_LOCAL", p.get("local", "")))
+      mesa = str(p.get("mesa", "-"))
+      orden = str(p.get("orden", "-"))
+      cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
+
+      html_resultado = f"""
+            <div class="card-box">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
+                
+                <div class="label-title">👤 Nombre y Apellido</div>
+                <div class="value-box">{nombre_completo}</div>
+
+                <div class="label-title">🆔 Cédula de Identidad</div>
+                <div class="value-box">{cedula_str}</div>
+
+                <div class="label-title">📍 Local de Votación</div>
+                <div class="value-box">{desc_local}</div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <div class="label-title">🗳️ Mesa</div>
+                        <div class="value-box" style="text-align: center;">{mesa}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="label-title">📋 Orden</div>
+                        <div class="value-box" style="text-align: center;">{orden}</div>
+                    </div>
+                </div>
+            </div>
+            """
+      st.markdown(html_resultado, unsafe_allow_html=True)
+
+      st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+      if st.button("VOLVER", key="btn_volver_unico"):
+        st.session_state.resultado_persona = None
+        st.rerun()
 
   else:
     st.error(

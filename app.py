@@ -128,11 +128,9 @@ try:
       st.session_state.resultado_persona = None
 
     if st.session_state.resultado_persona is None:
-      html_busqueda = """
-            <div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
-                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
-            </div>
-            """
+      html_busqueda = """<div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
+<h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
+</div>"""
       st.markdown(html_busqueda, unsafe_allow_html=True)
 
       cedula_input = st.text_input(
@@ -168,31 +166,25 @@ try:
       orden = str(p.get("orden", "-"))
       cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
-      html_resultado = f"""
-            <div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
-                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
-                
-                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">👤 Nombre y Apellido</div>
-                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{nombre_completo}</div>
-
-                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">🆔 Cédula de Identidad</div>
-                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{cedula_str}</div>
-
-                <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">📍 Local de Votación</div>
-                <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{desc_local}</div>
-
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex: 1;">
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">🗳️ Mesa</div>
-                        <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{mesa}</div>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">📋 Orden</div>
-                        <div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{orden}</div>
-                    </div>
-                </div>
-            </div>
-            """
+      html_resultado = f"""<div style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 24px 20px; border-radius: 20px; box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4); margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.8);">
+<h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
+<div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">👤 Nombre y Apellido</div>
+<div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{nombre_completo}</div>
+<div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">🆔 Cédula de Identidad</div>
+<div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{cedula_str}</div>
+<div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px;">📍 Local de Votación</div>
+<div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: 1px solid #ced4da;">{desc_local}</div>
+<div style="display: flex; gap: 10px; margin-top: 10px;">
+<div style="flex: 1;">
+<div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">🗳️ Mesa</div>
+<div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{mesa}</div>
+</div>
+<div style="flex: 1;">
+<div style="font-size: 0.75rem; font-weight: 800; color: #c62828; text-transform: uppercase; margin-bottom: 3px;">📋 Orden</div>
+<div style="background: #ffffff; color: #111111; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-align: center; border: 1px solid #ced4da;">{orden}</div>
+</div>
+</div>
+</div>"""
       st.markdown(html_resultado, unsafe_allow_html=True)
 
       st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)

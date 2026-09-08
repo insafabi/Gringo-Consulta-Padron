@@ -26,7 +26,7 @@ def obtener_imagen_base64():
 
 img_base64 = obtener_imagen_base64()
 
-# Estilos CSS limpios y seguros para contenedores y campos
+# Estilos CSS definitivos: Tarjeta translúcida y cajas internas 100% sólidas y legibles
 css_movil = (
     f"""
     <style>
@@ -59,11 +59,11 @@ css_movil = (
         max-width: 420px;
     }}
     
-    /* Contenedor translúcido elegante tipo cristal */
+    /* Contenedor principal translúcido tipo cristal */
     .card-box {{
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         padding: 24px 20px;
         border-radius: 20px;
         box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.4);
@@ -71,7 +71,7 @@ css_movil = (
         border: 1px solid rgba(255, 255, 255, 0.8);
     }}
     
-    /* Botones personalizados */
+    /* Botón rojo personalizado */
     div.stButton > button:first-child {{
         background-color: #e53935 !important;
         color: white !important;
@@ -86,6 +86,29 @@ css_movil = (
     }}
     div.stButton > button:first-child:hover {{
         background-color: #c62828 !important;
+    }}
+
+    /* Títulos pequeños de cada campo */
+    .field-label {{
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #c62828;
+        text-transform: uppercase;
+        margin-top: 12px;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }}
+
+    /* Cajas de valores 100% BLANCAS, SÓLIDAS y con LETRA NEGRA CLARA */
+    .field-value {{
+        background: #ffffff !important;
+        color: #111111 !important;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        border: 2px solid #dcdcdc;
+        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08);
     }}
     </style>
     """
@@ -146,11 +169,11 @@ try:
 
     if st.session_state.resultado_persona is None:
       # --- PANTALLA DE BÚSQUEDA ---
-      st.markdown('<div class="card-box">', unsafe_allow_html=True)
       st.markdown(
-          "<h3 style='color: #111; text-align: center; margin-top: 0;"
-          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
-          " 800;'>Número de cédula</h3>",
+          """
+            <div class="card-box">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Número de cédula</h3>
+            """,
           unsafe_allow_html=True,
       )
 
@@ -180,7 +203,7 @@ try:
           st.warning("Por favor, ingresa un número de cédula.")
 
     else:
-      # --- PANTALLA DE RESULTADOS CON COMPONENTES NATIVOS 100% SEGUROS ---
+      # --- PANTALLA DE RESULTADOS CON HTML PURO SEGURO ---
       p = st.session_state.resultado_persona
 
       nombre_completo = f"{p.get('NOMBRE', '')} {p.get('APELLIDO', '')}".strip()
@@ -189,58 +212,38 @@ try:
       orden = str(p.get("orden", "-"))
       cedula_str = f"{int(p['cedula']):,}".replace(",", ".")
 
-      st.markdown('<div class="card-box">', unsafe_allow_html=True)
-      st.markdown(
-          "<h3 style='color: #111; text-align: center; margin-top: 0;"
-          " margin-bottom: 15px; font-size: 1.15rem; font-weight:"
-          " 800;'>Datos del elector</h3>",
-          unsafe_allow_html=True,
-      )
+      # Construimos los resultados usando contenedores HTML limpios que evitan cualquier transparencia
+      html_resultado = f"""
+            <div class="card-box">
+                <h3 style="color: #111; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem; font-weight: 800;">Datos del elector</h3>
+                
+                <div class="field-label">👤 Nombre y Apellido</div>
+                <div class="field-value">{nombre_completo}</div>
 
-      # Uso de elementos nativos de Streamlit con cajas y textos perfectamente legibles
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>👤 Nombre y Apellido</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(nombre_completo)
+                <div class="field-label">🆔 Cédula de Identidad</div>
+                <div class="field-value">{cedula_str}</div>
 
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>🆔 Cédula de Identidad</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(cedula_str)
+                <div class="field-label">📍 Local de Votación</div>
+                <div class="field-value">{desc_local}</div>
 
-      st.markdown(
-          "<span style='color: #c62828; font-weight: 800; font-size: 0.75rem;"
-          " text-transform: uppercase;'>📍 Local de Votación</span>",
-          unsafe_allow_html=True,
-      )
-      st.info(desc_local)
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <div style="flex: 1;">
+                        <div class="field-label">🗳️ Mesa</div>
+                        <div class="field-value" style="text-align: center;">{mesa}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="field-label">📋 Orden</div>
+                        <div class="field-value" style="text-align: center;">{orden}</div>
+                    </div>
+                </div>
+            </div>
+            """
+      st.markdown(html_resultado, unsafe_allow_html=True)
 
-      col1, col2 = st.columns(2)
-      with col1:
-        st.markdown(
-            "<span style='color: #c62828; font-weight: 800; font-size:"
-            " 0.75rem; text-transform: uppercase;'>🗳️ Mesa</span>",
-            unsafe_allow_html=True,
-        )
-        st.info(mesa)
-      with col2:
-        st.markdown(
-            "<span style='color: #c62828; font-weight: 800; font-size:"
-            " 0.75rem; text-transform: uppercase;'>📋 Orden</span>",
-            unsafe_allow_html=True,
-        )
-        st.info(orden)
-
-      st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+      st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
       if st.button("VOLVER", key="btn_volver_unico"):
         st.session_state.resultado_persona = None
         st.rerun()
-
-      st.markdown("</div>", unsafe_allow_html=True)
 
   else:
     st.error(

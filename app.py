@@ -107,6 +107,7 @@ css_fondo = (
 
 st.markdown(css_fondo, unsafe_allow_html=True)
 
+
 # --- CARGA INTELIGENTE DE DATOS ---
 @st.cache_data
 def cargar_datos():
@@ -116,7 +117,6 @@ def cargar_datos():
   for archivo in archivos_excel:
     try:
       df_temp = pd.read_excel(archivo)
-      # Limpiar nombres de columnas (quitar espacios)
       df_temp.columns = df_temp.columns.astype(str).str.strip()
       lista_df.append(df_temp)
     except Exception:
@@ -124,8 +124,6 @@ def cargar_datos():
 
   if lista_df:
     df_consolidado = pd.concat(lista_df, ignore_index=True)
-
-    # Buscar automáticamente qué columna corresponde a la cédula
     columnas_lower = {col.lower(): col for col in df_consolidado.columns}
     columna_cedula_real = None
 
@@ -141,7 +139,6 @@ def cargar_datos():
         columna_cedula_real = columnas_lower[posible]
         break
 
-    # Si no encuentra coincidencia exacta, busca alguna columna que contenga la palabra 'cedula' o 'ci'
     if not columna_cedula_real:
       for col in df_consolidado.columns:
         if "ced" in col.lower() or col.lower() == "ci":
@@ -149,7 +146,6 @@ def cargar_datos():
           break
 
     if columna_cedula_real:
-      # Renombrar estandarizadamente a 'cedula'
       if columna_cedula_real != "cedula":
         df_consolidado = df_consolidado.rename(
             columns={columna_cedula_real: "cedula"}
@@ -195,7 +191,6 @@ try:
         if not resultado.empty:
           persona = resultado.iloc[0]
 
-          # Intentar mostrar campos de forma flexible por si cambian de nombre
           nombre = persona.get(
               "nombre", persona.get("NOMBRE", persona.get("Nombres", ""))
           )
@@ -207,12 +202,15 @@ try:
           )
           secc = persona.get("secc", persona.get("SECC", "43"))
 
+          # Formatear la cédula de manera segura fuera de las llaves complejas
+          cedula_str = f"{int(persona['cedula']):,}".replace(",", ".")
+
           st.markdown(
               f"""
                 <div class="result-box">
                     <h4 style="color: #e53935; margin-top: 0; margin-bottom: 10px;">¡Votante Encontrado!</h4>
                     <p style="margin: 4px 0;"><b>Nombre:</b> {nombre} {apellido}</p>
-                    <p style="margin: 4px 0;"><b>Cédula:</b> {int(persona['cedula']):,}".replace(',', '.')}</p>
+                    <p style="margin: 4px 0;"><b>Cédula:</b> {cedula_str}</p>
                     <p style="margin: 4px 0;"><b>Local de Votación:</b> {local}</p>
                     <p style="margin: 4px 0;"><b>Seccional N°:</b> {secc}</p>
                 </div>
